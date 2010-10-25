@@ -17,9 +17,12 @@
   <body><div id="center"><div id="fig">
     <script type="text/javascript">
 
+    /* Sizing and scales. */
     var w = 400,
-        h = 800;
-
+        h = 800,
+        x = pv.Scale.linear(0, 1).range(0, w-80),
+        y = pv.Scale.ordinal(pv.range(40)).splitBanded(0, h, 4/5);
+ 
     /* The root panel. */
     var vis = new pv.Panel()
         .width(w)
@@ -29,48 +32,47 @@
         .right(10)
         .top(20);
 
+    /* The bars. */
+    var bar = vis.add(pv.Bar)
+        .top(function() y(this.index))
+        .height(y.range().band)
+        .left(0)
+      
+    /* The value label. */
+    var label = bar.anchor("right").add(pv.Label)
+        .textStyle("white")
+        .textMargin(5);
+      
+    /* The variable label. */
+    var labelr = bar.anchor("right").add(pv.Label)
+        .textMargin(5)
+        .textAlign("left");
+
+    /* X-axis ticks. */
+    var rule = vis.add(pv.Rule)
+        .data(x.ticks(0))
+        .left(x)
+        .strokeStyle(function(d) d ? "rgba(255,255,255,.3)" : "#000");
+    var ruled = rule.add(pv.Rule)
+        .top(0)
+        .height(5)
+        .strokeStyle("#000")
+      .anchor("top").add(pv.Label)
+        .text(x.tickFormat);
+
     vis.render();
  
-    function draw(data) {
+    function update(data) {
       data.sort(function(l,r) (l["percent"] < r["percent"]) ? 1 : (l["percent"] > r["percent"]) ? -1 : 0);
-
       percent = $.map(data,function(d) d["percent"]);
 
-      /* Sizing and scales. */
-      var x = pv.Scale.linear(0, Math.max.apply(Math, percent)).range(0, w-80),
-          y = pv.Scale.ordinal(pv.range(40)).splitBanded(0, h, 4/5);
-      
-      /* The bars. */
-      var bar = vis.add(pv.Bar)
-          .data(percent)
-          .top(function() y(this.index))
-          .height(y.range().band)
-          .left(0)
-          .width(x);
-      
-      /* The value label. */
-      var value = bar.anchor("right").add(pv.Label)
-          .textStyle("white")
-          .textMargin(5)
-          .text(function(d) d.toFixed(2));
-      
-      /* The variable label. */
-      var variable = bar.anchor("right").add(pv.Label)
-          .textMargin(5)
-          .textAlign("left")
-          .text(function() data[this.index]["name"]);
-
-      /* X-axis ticks. */
-      vis.add(pv.Rule)
-          .data(x.ticks(5))
-          .left(x)
-          .strokeStyle(function(d) d ? "rgba(255,255,255,.3)" : "#000")
-        .add(pv.Rule)
-          .top(0)
-          .height(5)
-          .strokeStyle("#000")
-        .anchor("top").add(pv.Label)
-          .text(x.tickFormat);
+      x = pv.Scale.linear(0, Math.max.apply(Math, percent)).range(0, w-80),
+ 
+      bar.data(percent).width(x);
+      label.text(function(d) d.toFixed(2));
+      labelr.text(function() data[this.index]["name"]);
+      rule.data(x.ticks(5)).left(x);
+      ruled.text(x.tickFormat);
 
       vis.render();
     }
@@ -89,19 +91,24 @@
               data.push({name:name, percent:percent});
           }
       });
-      draw(data);
+      update(data);
+    }
+
+    function query() {
+      $.jsonpProxy("http://opendata.toronto.ca/vote2010/unofficialresult.txt", callback);
     }
 
     function test() {
       data = [];
       for (i=0;i<40;i++) {
-        data.push({name:"FORD",percent:Math.random()*100+1});
+        data.push({name:i,percent:Math.random()*60});
       }
-      draw(data);
+      update(data);
     }
 
-    $.jsonpProxy("http://opendata.toronto.ca/vote2010/unofficialresult.txt", callback);
-    //test();
+    query();
+    setInterval(query, 30000);
+    //setInterval(test,1000);
 
     </script>
   </div></div></body>
