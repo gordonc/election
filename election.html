@@ -34,7 +34,7 @@
 
     /* The bars. */
     var bar = vis.add(pv.Bar)
-        .top(function() y(this.index))
+        .top(function() { return y(this.index); })
         .height(y.range().band)
         .left(0)
       
@@ -52,7 +52,7 @@
     var rule = vis.add(pv.Rule)
         .data(x.ticks(0))
         .left(x)
-        .strokeStyle(function(d) d ? "rgba(255,255,255,.3)" : "#000");
+        .strokeStyle(function(d) { return d ? "rgba(255,255,255,.3)" : "#000"; });
     var ruled = rule.add(pv.Rule)
         .top(0)
         .height(5)
@@ -63,14 +63,14 @@
     vis.render();
  
     function update(data) {
-      data.sort(function(l,r) (l["percent"] < r["percent"]) ? 1 : (l["percent"] > r["percent"]) ? -1 : 0);
-      percent = $.map(data,function(d) d["percent"]);
+      data.sort(function(l,r) { return (l["percent"] < r["percent"]) ? 1 : (l["percent"] > r["percent"]) ? -1 : 0; });
+      percent = $.map(data,function(d) { return d["percent"]; });
 
       x = pv.Scale.linear(0, Math.max.apply(Math, percent)).range(0, w-80),
  
       bar.data(percent).width(x);
-      label.text(function(d) d.toFixed(2));
-      labelr.text(function() data[this.index]["name"]);
+      label.text(function(d) { return d.toFixed(2); });
+      labelr.text(function() { return data[this.index]["name"]; });
       rule.data(x.ticks(5)).left(x);
       ruled.text(x.tickFormat);
 
