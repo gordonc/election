@@ -1,0 +1,7 @@
+webpage for polling Toronto 2010 Election Results 
+
+API: http://www.toronto.ca/open/datasets/elections-2010/
+
+graphing library: http://vis.stanford.edu/protovis/ex/bar.html
+JSONP with text: http://jsonp.org/
+
